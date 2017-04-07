@@ -143,15 +143,12 @@ To achieve high confidence in the generated networks, an abundance of Bayesian n
 
 By eliminating one problem and introducing another, consensus networks enable the ability of parallelization by requiring multiple units of work rather than just one faster unit of work.
 Other authors describe parallel implementations that can increase the speed of Bayesian network learning @altekar @misra.
-However, no libraries exist which compute multiple Bayesian networks concurrently.
-This project examines the value of Bayesian network learning within a parallel environment in order to reduce the time needed to generate consensus networks using many topological inputs.
-This examination is performed through implementation of the said algorithm, exploring methods available such as OpenMP and MPI.
+However, no libraries existed which compute multiple Bayesian networks concurrently.
 
-Results from running experiments with varying number of cores and machines are examined and it is found our parallelization has a positive impact. There are a couple caveats, however, such as the over provisioning of resources which leads to waste and potential introduction of latency from cluster parallelism.
-When the resources are appropriate for the problem size, OpenMP and MPI substantially reduce the time to generate a consensus network. The reduction in runtime appears to be linear, more so after accounting for introduced latency and overhead.
+This paper is an extension to the initial implementation of the program, which shows why the algorithm needs to be sped up.
+An increase in samples causes linear growth of the problem and introduction of additional genes causes exponential growth of the problem @firstpaper.
 
-This paper is an extension to the initial analysis performed on the algorithm and explains the thought processes behind the implementation. The preceding publication shows why the algorithm needs to be sped up, as an increase in samples causes linear growth of the problem and introduction of additional genes causes exponential growth of the problem @firstpaper.
-After reading this paper, the reader should have a sense of why and how the parallelization was reasoned about and implemented to achieve optimal efficiency.
+This project examines the value of Bayesian network learning within a GPGPU accelerated environment in order to reduce the time needed to generate consensus networks using many topological inputs.
 
 # Background
 ## Bayesian Networks
@@ -169,9 +166,11 @@ CUDA is a parallel computing platform and application programming interface (API
 CUDA allows software developers to utilize CUDA-enabled GPUs for general purpose processing (or GPGPU).
 CUDA introduces a concept called kernels, which are extensions of C functions that, when called, are executed in parallel by CUDA threads instead of once like regular C functions @cudaguide.
 The primary use case is when work is independent and many things need to be done in parallel (e.g. scaling a vector).
-Due to the structure of threads on the GPU, operations such as branches or jumps are permitted but discouraged. This is because threads run in lockstep and when a branch happens, the branches are executed serially. This means threads are suspended and do not continue execution while the opposite branch is being explored. After the branch completes and the instructions converge, all threads resume running @cudaguide. This has many detrimental performance implications.
+Due to the structure of threads on the GPU, operations such as branches or jumps are permitted but highly discouraged. This is because threads run in lockstep and when a branch happens, the branches are executed serially. This means threads are suspended and do not continue execution while the opposite branch is being explored. After the branch completes and the instructions converge, all threads resume running @cudaguide. This has many detrimental performance implications.
 Knowing this, the GPU is best suited for vector-operations like scaling or other arithmetic which does not branch.
-The memory for CUDA also resides on the GPU itself, which means before any kernels are executed memory must be copied to the GPU. Memory must then also be copied back to the host machine for use by the CPU @cudaguide. This adds a delay which may invalidate the benefits of CUDA for smaller workloads.
+The memory for CUDA also resides on the GPU itself, which means before any kernels are executed memory must be copied to the GPU.
+Memory must then also be copied back to the host machine for use by the CPU @cudaguide.
+This adds a delay which may invalidate the benefits of CUDA for smaller workloads. We will evaluate this in this study.
 
 # Methodology
 Testing was performed on the `tesla` machine at the University of Akron's Computer Science Department. The machine contains a Tesla K40C and 2x Intel(R) Xeon(R) CPU X5690 @ 3.47GHz.
