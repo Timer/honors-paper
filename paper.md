@@ -204,6 +204,34 @@ The library being used to run the tests is available online @sourcecode. This li
 
 ## Traditional
 
+## Processors
+The first natural step in parallelizing computation is to attempt to use multiple cores (or threads) simultaneously on the machine. This can be done by running multiple instances of the program, or by implementing code which takes advantage of multiple threads.
+Analyzing the program reveals a couple potential places for parallelization. There are many for-loops which perform actions which are independent from one another.
+The for-loops identified for inspection are the generation of topologies and the iteration over the topologies to generate networks.
+
+The generation of topologies results in a a predetermined number of topologies filled into an array. This operation can be easily parallelized across multiple cores as they are independent.
+The appropriate tool to perform this parallelization is OpenMP. OpenMP was implemented with a simple compiler directive which sped up computation.
+```c++
+#pragma omp parallel for
+for (...) { }
+```
+
+Iterating over the topologies to generate networks can also be parallelized.
+The creation of Bayesian networks are independent from one another, and thus, networks can be asynchronously generated.
+Implementation of this parallelization is straight-forward as Bayesian network computation does not mutate its data set. This prevents us from having to replicate the memory and increase the space complexity of the algorithm. OpenMP was implemented again as shown above.
+Additionally, within the parallel for, the resulting network must be appended to the consensus network.
+The consensus network, however, is not thread-safe and must be operated on within a critical section. A critical section specifies that the code can only be executed on one thread at a time.
+```c++
+#pragma omp critical
+for (...) { }
+```
+This ensures the networks are properly summed together, otherwise, an addition may be lost. For example, if `Thread A` and `Thread B` attempt to increment a variable at the same time, they may both access the value before the other commits the new value. This will result in a lost operation, as the threads are not aware of one another.
+
+To measure the resulting computational runtime decrease, multiple tests were performed with varying number of processors.
+A single set of synthetic data was used which consisted of 10 genes and 10,000 samples.
+Using an exclusively reserved machine, tests were run by varying the number of processors (up to 32) and measuring the algorithm performance for the creation of 160 Bayesian networks per gene 1600 total).
+We have reached the resource limits on the systems which we have access to, and cannot test beyond 32 cores. The selection of 10 genes and 160 Bayesian networks was arbitrarily chosen as sufficient means to measure computation time.
+
 ## CUDA
 
 # Results and Discussion
