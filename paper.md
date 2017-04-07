@@ -195,7 +195,7 @@ The library being used to run the tests is available online @sourcecode. This li
 \label{trad_table}
 \begin{tabular}{|l|l|l|l|}
 \hline
-\textbf{Elements} & \textbf{Traditional Execution Time} \\ \hline
+\textbf{Elements} & \textbf{Mean Time} \\ \hline
 12800 & 1 ms \\ \hline
 25600 & 6 ms \\ \hline
 51200 & 25 ms \\ \hline
