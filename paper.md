@@ -181,6 +181,48 @@ Each test was run five times with the mean, standard deviation, and standard err
 
 The library being used to run the tests is available online @sourcecode. This library was implemented as described in this paper.
 
+
+## Traditional
+
+## CUDA
+
+# Results and Discussion
+## Traditional
+
+\begin{table}[ht]
+\centering
+\caption{Traditional Runtime}
+\label{trad_table}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Elements} & \textbf{Traditional Execution Time} \\ \hline
+12800 & 1 ms \\ \hline
+25600 & 6 ms \\ \hline
+51200 & 25 ms \\ \hline
+102400 & 0.1 s \\ \hline
+204800 & 0.403 s \\ \hline
+409600 & 1.598 s \\ \hline
+819200 & 6.049 s \\ \hline
+1638400 & 28.122 s \\ \hline
+\end{tabular}
+\end{table}
+
+## CUDA
+
+\begin{table}[ht]
+\centering
+\caption{CUDA Execution Time}
+\label{cuda_table}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Elements} & \textbf{Mean Time} \\ \hline
+819200 & 18 ms \\ \hline
+1638400 & 66 ms \\ \hline
+3276800 & 255 ms \\ \hline
+6553600 & 51 ms \\ \hline
+\end{tabular}
+\end{table}
+
 # Conclusion
 By generating a consensus network out of many Bayesian networks, researchers may screen and infer new gene interactions. This allows researchers to feel more confident about testing hypotheses in the lab, such that their resources and time will not be wasted.
 
