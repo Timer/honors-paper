@@ -127,6 +127,14 @@ references:
         family: Korb
       - given: Ann
         family: Nicholson
+  - id: openmpapi
+    type: webpage
+    title: OpenMP Application Program Interface
+    URL: http://www.openmp.org/mp-documents/OpenMP4.0.0.pdf
+  - id: openmpboard
+    type: webpage
+    title: About the OpenMP ARB and OpenMP.org
+    URL: http://openmp.org/wp/about-openmp/
 ---
 
 # Introduction
@@ -160,6 +168,19 @@ Here, a topology refers to a hierarchical structure of parenthood that the K2 al
 Restricting the parent ordering, however, creates an issue of bias, which is inherent within a constraint-based search space reduction @sriram.
 Sriram @sriram proposed a solution to this issue by creating a consensus network, or the combination of multiple Bayesian networks derived from several topological inputs.
 To eliminate the bias created by these restraints, many randomly generated topologies are used. By increasing the number of topological inputs, the consensus network has a greater chance of reflecting the true nature of the gene interactions with higher levels of confidence.
+
+## OpenMP
+OpenMP or (Open Multi-Processing) is a cross-platform, multilingual application programming interface (API) which enables shared-memory parallel programming on a single machine.
+The OpenMP specification consists of compiler directives and library functions used to parallelize portions of a program's control flow @openmpapi.
+The most rudimentary example of OpenMP would be to distribute a for-loop across multiple threads.
+
+An advisory board of top entities in computation controls its specification @openmpboard which can be implemented by various compilers to target specific system capabilities and architectures.
+The specification includes language-specific APIs, compiler directives, and standardized environment variables @openmpapi.
+The model of OpenMP is comparable to the fork-join model, but provides additional convenience (cross-platform) features through compiler directives. These directives consist of, but are not limited to, barriers, critical regions, variable atomicity, shared memory, and reductions @openmpapi.
+
+OpenMP enables parallel code portability at a level which would not be achievable while retaining an ideal code climate.
+OpenMP, by nature allows simple and straight-forward parallelization of loops with a compiler directive that targets the system for which the program is compiled on.
+Without OpenMP, the program would have to include many different libraries and routines to achieve parallel code across different systems. The result of this would be a program which only works on a specific set of machines, or a code base which is hard to maintain and debug when changes are made to the underlying algorithm.
 
 ## CUDA
 CUDA is a parallel computing platform and application programming interface (API) developed by NVIDIA @cudainfo.
