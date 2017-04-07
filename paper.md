@@ -202,7 +202,6 @@ Each test was run five times with the mean, standard deviation, and standard err
 
 The library being used to run the tests is available online @sourcecode. This library was implemented as described in this paper.
 
-
 ## Traditional
 
 ## CUDA
