@@ -184,15 +184,12 @@ The library being used to run the tests is available online @sourcecode. This li
 # Conclusion
 By generating a consensus network out of many Bayesian networks, researchers may screen and infer new gene interactions. This allows researchers to feel more confident about testing hypotheses in the lab, such that their resources and time will not be wasted.
 
-We have concluded that utilizing parallelization through means of OpenMP and MPI substantially reduces the time to generate a consensus network. However, as demonstrated in the graphs above, an increase in resources must be tailored to the problem at hand. Increasing the resources too significantly becomes detrimental, resulting in costly waste; see Table 2.
-
+We have concluded that utilizing parallelization through means of CUDA trivially reduces the time to generate a consensus network.
 Future work may involve parallelizing the coalescing of consensus networks in effort to reduce the overhead introduced when increasing cluster parallelism.
-Additionally, all matrix operations are currently done on a single-thread. These operations (in some cases) contain thousands of rows and columns being applied to an expensive mathematical function.
-These operations are ideal for the GPU as it can perform the arithmetic across several thousand of threads simultaneously.
-As such, the motivation for this is that CUDA (or other means of GPGPU acceleration) has the potential to speed the algorithm up by several orders of magnitude.
 
 # Acknowledgments
 This research was funded in part by a grant from the Choose Ohio First Bioinformatics scholarship.
+Additional resources were provided by the The University of Akron's Buchtel College of Arts and Sciences.
 
 The data, statements, and views within this paper are solely the responsibility of the authors.
 
