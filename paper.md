@@ -237,7 +237,8 @@ We have reached the resource limits on the system(s) which we have access to, an
 # Results and Discussion
 
 ## Processors
-When increasing the number of processors, the resulting runtime decrease appears to be linear.
+When increasing the number of processors, the resulting runtime decrease appears to be linear. The linear nature of the results removes the necessity for further testing between the number of cores tested.
+
 Figure 1 illustrates that as the number of processors increase, the runtime decreases at approximately the same rate. Exact results may be seen in Table 1.
 
 ![Illustrates runtime decrease as the number of processors increase. The decline is nearly linear.](https://puu.sh/urrcE/69be7c507f.png)
