@@ -228,7 +228,7 @@ for (...) { }
 This ensures the networks are properly summed together, otherwise, an addition may be lost. For example, if `Thread A` and `Thread B` attempt to increment a variable at the same time, they may both access the value before the other commits the new value. This will result in a lost operation, as the threads are not aware of one another.
 
 To measure the resulting computational runtime decrease, multiple tests were performed with varying number of processors.
-A single set of synthetic data was used which consisted of 10 genes and 100,000 samples.
+A single set of synthetic data was used which consisted of 10 genes and 102,400 samples.
 Using `tesla`, tests were run by varying the number of processors (up to 12) and measuring the algorithm performance for the creation of 16 Bayesian networks per gene (160 total).
 We have reached the resource limits on the system(s) which we have access to, and cannot test beyond 12 cores. The selection of 10 genes and 16 Bayesian networks was arbitrarily chosen as sufficient means to measure computation time.
 
