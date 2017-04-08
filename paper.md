@@ -241,7 +241,7 @@ When increasing the number of processors, the resulting runtime decrease appears
 
 Figure 1 illustrates that as the number of processors increase, the runtime decreases at approximately the same rate. Exact results may be seen in Table 1.
 
-![Illustrates runtime decrease as the number of processors increase. The decline is nearly linear.](https://puu.sh/urrcE/69be7c507f.png)
+![Illustrates runtime decrease as the number of processors increase. The decline is nearly linear.](img/processors.png)
 
 \begin{table}[ht]
 \centering
@@ -251,8 +251,8 @@ Figure 1 illustrates that as the number of processors increase, the runtime decr
 \hline
 \textbf{Cores} & \textbf{Mean Time} \\ \hline
 2 & 362.032s \\ \hline
-6 & 167.460 \\ \hline
-12 & 93.540 \\ \hline
+6 & 167.460s \\ \hline
+12 & 93.540s \\ \hline
 \end{tabular}
 \end{table}
 
@@ -265,7 +265,7 @@ When performing matrix operations on CUDA, the performance increase is marginal.
 
 Figure 2 illustrates that when using CUDA, the runtime decreases marginally. Exact results may be seen in Table 2.
 
-![Illustrates runtime decrease with CUDA.](https://puu.sh/urrcE/69be7c507f.png)
+![Illustrates runtime decrease with CUDA.](img/gpu.png)
 
 \begin{table}[ht]
 \centering
@@ -275,8 +275,8 @@ Figure 2 illustrates that when using CUDA, the runtime decreases marginally. Exa
 \hline
 \textbf{Cores (+ CUDA)} & \textbf{Mean Time} \\ \hline
 2 & 360.480s \\ \hline
-6 & 156.996 \\ \hline
-12 & 92.879 \\ \hline
+6 & 156.996s \\ \hline
+12 & 92.879s \\ \hline
 \end{tabular}
 \end{table}
 
