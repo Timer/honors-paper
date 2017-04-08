@@ -252,8 +252,8 @@ Figure 1 illustrates that as the number of processors increase, the runtime decr
 \textbf{Cores} & \textbf{Mean Time} \\ \hline
 1 & 224.309 \\ \hline
 2 & 362.032s \\ \hline
-6 & 156.996 \\ \hline
-12 & 92.879 \\ \hline
+6 & 167.460 \\ \hline
+12 & 93.540 \\ \hline
 \end{tabular}
 \end{table}
 
@@ -262,14 +262,19 @@ OpenMP results in such low runtime standard error because it works with memory w
 The reduction of standard error as the number of threads increase may be due to the kernel. The kernel is responsible for scheduling threads and ensuring other work on the system gets done. The increase in threads means there are more threads which may go uninterrupted by the kernel scheduling something else from the operating system.
 
 # CUDA
+When performing matrix operations on CUDA, the performance increase is marginal.
+
+Figure 2 illustrates that when using CUDA, the runtime decreases marginally. Exact results may be seen in Table 2.
+
+![Illustrates runtime decrease with CUDA.](https://puu.sh/urrcE/69be7c507f.png)
 
 \begin{table}[ht]
 \centering
-\caption{Runtimes for the program across increasing numbers of processors.}
+\caption{Runtimes for the program across increasing numbers of processors while using CUDA.}
 \label{procs_table}
 \begin{tabular}{|l|l|l|l|}
 \hline
-\textbf{Cores} & \textbf{Mean Time} \\ \hline
+\textbf{Cores (+ CUDA)} & \textbf{Mean Time} \\ \hline
 1 & 200.546 \\ \hline
 2 & 360.480s \\ \hline
 6 & 156.996 \\ \hline
