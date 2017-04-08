@@ -231,6 +231,11 @@ Using `tesla`, tests were run by varying the number of processors (up to 12) and
 We have reached the resource limits on the system(s) which we have access to, and cannot test beyond 12 cores. The selection of 10 genes and 16 Bayesian networks was arbitrarily chosen as sufficient means to measure computation time.
 
 ## CUDA
+Since network generation relies heavily on matrix math, which consists of many vector operations, it makes sense to explore acceleration using CUDA.
+Parallelizing code in CUDA required a redesign on the matrix class to ensure it was stored in contiguous memory and not behind double pointers.
+After this sophisticated redesign, it was relatively trivial to add CUDA to the equation in effort to reduce computation time.
+
+At its core, the implementation depends on a hybrid switch between utilizing CUDA or not and managing the memory state. The switch evaluates the size of the matrix and evaluates whether or not the size of the computation warrants the latency of the copy from the host to the device and back.
 
 # Results and Discussion
 
