@@ -249,19 +249,33 @@ Figure 1 illustrates that as the number of processors increase, the runtime decr
 \label{procs_table}
 \begin{tabular}{|l|l|l|l|}
 \hline
-\textbf{Cores} & \textbf{Mean Time} & \textbf{\textit{s}} & \textbf{\textit{se}} \\ \hline
-1 & 396.348 & 3.192 & 1.427 \\ \hline
-2 & 269.023 & 0.530 & 0.237 \\ \hline
-4 & 137.359 & 0.629 & 0.281 \\ \hline
-8 & 76.169 & 0.220 & 0.090 \\ \hline
-16 & 40.359 & 0.307 & 0.137 \\ \hline
-32 & 22.172 & 0.144 & 0.064 \\ \hline
+\textbf{Cores} & \textbf{Mean Time} \\ \hline
+1 & 224.309 \\ \hline
+2 & 362.032s \\ \hline
+6 & 156.996 \\ \hline
+12 & 92.879 \\ \hline
 \end{tabular}
 \end{table}
 
 This linear decrease is consistent with how OpenMP distributes its work. OpenMP distributes the task of an independent Bayesian network computation across multiple threads simultaneously. These independent tasks are non-blocking and do not lock one another, and thus have very little contention. There is one lock after each computation which appends the network to the consensus network, but is negligible to the total time taken to compute the Bayesian networks.
 OpenMP results in such low runtime standard error because it works with memory within the program and requires no network communication like MPI.
 The reduction of standard error as the number of threads increase may be due to the kernel. The kernel is responsible for scheduling threads and ensuring other work on the system gets done. The increase in threads means there are more threads which may go uninterrupted by the kernel scheduling something else from the operating system.
+
+# CUDA
+
+\begin{table}[ht]
+\centering
+\caption{Runtimes for the program across increasing numbers of processors.}
+\label{procs_table}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Cores} & \textbf{Mean Time} \\ \hline
+1 & 200.546 \\ \hline
+2 & 360.480s \\ \hline
+6 & 156.996 \\ \hline
+12 & 92.879 \\ \hline
+\end{tabular}
+\end{table}
 
 # Conclusion
 By generating a consensus network out of many Bayesian networks, researchers may screen and infer new gene interactions. This allows researchers to feel more confident about testing hypotheses in the lab, such that their resources and time will not be wasted.
