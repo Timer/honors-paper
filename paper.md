@@ -202,8 +202,6 @@ Each test was run five times with the mean, standard deviation, and standard err
 
 The library being used to run the tests is available online @sourcecode. This library was implemented as described in this paper.
 
-## Traditional
-
 ## Processors
 The first natural step in parallelizing computation is to attempt to use multiple cores (or threads) simultaneously on the machine. This can be done by running multiple instances of the program, or by implementing code which takes advantage of multiple threads.
 Analyzing the program reveals a couple potential places for parallelization. There are many for-loops which perform actions which are independent from one another.
