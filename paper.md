@@ -282,6 +282,8 @@ Figure 2 illustrates that when using CUDA, the runtime decreases marginally. Exa
 \end{tabular}
 \end{table}
 
+The marginal increase is unfortunate, but understandable. Essentially, the time it takes to copy memory to and from the GPU outweighs that of the performance gain of `O(n)` operations, as computing networks does not perform any matrix multiplication -- strictly `O(n)` operations (e.g. addition, subtraction, scalars).
+
 # Conclusion
 By generating a consensus network out of many Bayesian networks, researchers may screen and infer new gene interactions. This allows researchers to feel more confident about testing hypotheses in the lab, such that their resources and time will not be wasted.
 
