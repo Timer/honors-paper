@@ -250,7 +250,6 @@ Figure 1 illustrates that as the number of processors increase, the runtime decr
 \begin{tabular}{|l|l|l|l|}
 \hline
 \textbf{Cores} & \textbf{Mean Time} \\ \hline
-1 & 224.309 \\ \hline
 2 & 362.032s \\ \hline
 6 & 167.460 \\ \hline
 12 & 93.540 \\ \hline
@@ -275,7 +274,6 @@ Figure 2 illustrates that when using CUDA, the runtime decreases marginally. Exa
 \begin{tabular}{|l|l|l|l|}
 \hline
 \textbf{Cores (+ CUDA)} & \textbf{Mean Time} \\ \hline
-1 & 200.546 \\ \hline
 2 & 360.480s \\ \hline
 6 & 156.996 \\ \hline
 12 & 92.879 \\ \hline
