@@ -233,10 +233,8 @@ We have reached the resource limits on the system(s) which we have access to, an
 
 ## CUDA
 Since network generation relies heavily on matrix math, which consists of many vector operations, it makes sense to explore acceleration using CUDA.
-Parallelizing code in CUDA required a redesign on the matrix class to ensure it was stored in contiguous memory and not behind double pointers.
-After this sophisticated redesign, it was relatively trivial to add CUDA to the equation in effort to reduce computation time.
-
-At its core, the implementation depends on a hybrid switch between utilizing CUDA or not and managing the memory state. The switch evaluates the size of the matrix and evaluates whether or not the size of the computation warrants the latency of the copy from the host to the device and back.
+Parallelizing code in CUDA requires memory stored in contiguous memory on the host machine.
+Adding CUDA acceleration is relatively trivial when working with vector operations like this.
 
 # Results and Discussion
 
