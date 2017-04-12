@@ -204,6 +204,7 @@ The library being used to run the tests is available online @sourcecode. This li
 
 ## Processors
 The first natural step in parallelizing computation is to attempt to use multiple cores (or threads) simultaneously on the machine. This can be done by running multiple instances of the program, or by implementing code which takes advantage of multiple threads.
+There is a lot of shared memory in the program, however, which adds additional complexity and latency when running multiple instances of the program. To keep things simple and quick, a single program instance will be utilized.
 Analyzing the program reveals a couple potential places for parallelization. There are many for-loops which perform actions which are independent from one another.
 The for-loops identified for inspection are the generation of topologies and the iteration over the topologies to generate networks.
 
