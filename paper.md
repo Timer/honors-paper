@@ -234,7 +234,55 @@ We have reached the resource limits on the system(s) which we have access to, an
 ## CUDA
 Since network generation relies heavily on matrix math, which consists of many vector operations, it makes sense to explore acceleration using CUDA.
 Parallelizing code in CUDA requires memory stored in contiguous memory on the host machine.
-Adding CUDA acceleration is relatively trivial when working with vector operations like this.
+
+With these two prerequisites, adding CUDA is relatively trivial but requires an understanding of some low level units and architecture.
+Executing CUDA code consists of grids, blocks, and threads.
+These units are important to understand so you can achieve maximum occupancy (utilization) of the cores on the GPU.
+
+Simply put, these units are simply ways to split up work which is to be processed by the GPU. In terms of the hierarchy, threads make up a block and blocks make up a grid. A grid is executed on the GPU which is composed of many multiprocessors. Each multiprocessor is responsible for executing one or more of the blocks in the grid. The multiprocessors consist of many stream processors, which then are responsible for running one or more of the threads in the block.
+
+It is also important to be aware of the architecture of your GPU device.
+There is a maximum number of threads that can be executed per block.
+It is important to know this, because over scheduling threads will not cause an error, but instead corrupt memory.
+
+Determining maximum occupancy without exceeding the capability of the GPU is very simple since CUDA 6.5 (used to be difficult), which introduced `cudaOccupancyMaxPotentialBlockSize()`. This function reasonably determines the optimal execution configuration for a user defined kernel.
+Invoking this method returns the minGridSize and blockSize optimal to execute a kernel with the given shared memory usage (dynamicSMemSize) and total number of kernels you intend to do work on (blockSizeLimit, e.g. array length).
+
+```c++
+template <class T>
+cudaError_t cudaOccupancyMaxPotentialBlockSize(int *minGridSize, int *blockSize, T kernel, size_t dynamicSMemSize, int blockSizeLimit);
+```
+
+Within the kernel, you must determine the unit of work the thread is responsible for.
+To compute this, you must use some CUDA defined runtime variables to decode that thread's index.
+
+```
+blockDim (type: dim3) Dimensions of the block executing in this context
+blockIdx (type: uint3) Current block index within executing grid
+threadIdx (type: uint3) Current thread index within executing block
+```
+
+With this knowledge and the heiarchy as explained previously, we can deduce the following expression to determine our thread index: `blockIdx.x * blockDim.x + threadIdx.x`.
+
+Applying this, we can easily implement an expensive mathematical function in CUDA:
+```c++
+__global__ void vec_lgamma(double *a, double *c, const unsigned int n) {
+  const long idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (idx < n) {
+    c[idx] = lgamma(a[idx]);
+  }
+}
+```
+
+Secondly, we can also easily implement matrix addition and subtraction (with small modification):
+```c++
+__global__ void vec_add(double *a, double *b, double *c, const unsigned int n) {
+  const long idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (idx < n) {
+    c[idx] = a[idx] + b[idx];
+  }
+}
+```
 
 # Results and Discussion
 
