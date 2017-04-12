@@ -228,7 +228,7 @@ This ensures the networks are properly summed together, otherwise, an addition m
 
 To measure the resulting computational runtime decrease, multiple tests were performed with varying number of processors.
 A single set of synthetic data was used which consisted of 10 genes and 102,400 samples.
-Using `tesla`, tests were run by varying the number of processors (up to 12) and measuring the algorithm performance for the creation of 16 Bayesian networks per gene (160 total).
+Using `tesla` (2x Intel(R) Xeon(R) CPU X5690 @ 3.47GHz), tests were run by varying the number of processors (up to 12) and measuring the algorithm performance for the creation of 16 Bayesian networks per gene (160 total).
 We have reached the resource limits on the system(s) which we have access to, and cannot test beyond 12 cores. The selection of 10 genes and 16 Bayesian networks was arbitrarily chosen as sufficient means to measure computation time.
 
 ## CUDA
