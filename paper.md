@@ -276,10 +276,11 @@ There is one lock after each computation which appends the network to the consen
 It's difficult to reason about this,
 
 # CUDA
-When performing matrix operations on CUDA, the performance increase is between negative (a decrease).
-The tests were performed on a Tesla K40c card, which contains 15 multiprocessors at 192 stream processors each (2880 total stream cores).
+When performing matrix operations on CUDA, the performance increase is negative.
+In a couple cases, the CUDA implementation beats out the CPU by fractions of a second.
+The tests were performed on a Tesla K40c card, which contains 15 multiprocessors at 192 stream processors each (2880 total stream cores), versus the system's 12 cores.
 
-Figure 2 illustrates that when using CUDA, the runtime increases. Exact results may be seen in Table 2.
+Figure 1 illustrates that when using CUDA, the runtime increase is negative. Exact results may be seen in Table 2.
 
 \begin{table}[ht]
 \centering
@@ -303,7 +304,7 @@ Figure 2 illustrates that when using CUDA, the runtime increases. Exact results 
 \end{tabular}
 \end{table}
 
-The marginal increase is unfortunate, but understandable. Essentially, the time it takes to copy memory to and from the GPU outweighs that of the performance gain of `O(n)` operations, as computing networks does not perform any matrix multiplication -- strictly `O(n)` operations (e.g. addition, subtraction, scalars).
+The detremental performance (and seldom marginal increase) is unfortunate, but understandable. Essentially, the time it takes to copy memory to and from the GPU outweighs that of the performance gain of `O(n)` operations, as computing networks does not perform any matrix multiplication (approx `O(n^2)`) and strictly `O(n)` operations (e.g. addition, subtraction, scalars).
 
 # Conclusion
 By generating a consensus network out of many Bayesian networks, researchers may screen and infer new gene interactions. This allows researchers to feel more confident about testing hypotheses in the lab, such that their resources and time will not be wasted.
