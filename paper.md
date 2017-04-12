@@ -243,9 +243,9 @@ At its core, the implementation depends on a hybrid switch between utilizing CUD
 ![Illustrates the comparison between CPU and CUDA. It appears CUDA provides nearly no benefit for Bayesian network learning.](img/sharp.png)
 
 ## Processors
-When increasing the number of processors, the resulting runtime decrease appears to be linear. The linear nature of the results removes the necessity for further testing between the number of cores tested.
-
-Figure 1 illustrates that as the number of processors increase, the runtime decreases at approximately the same rate. Exact results may be seen in Table 1.
+When increasing the number of processors, a very strange anomaly occurs.
+When first increasing the amount of work to two processors, runtime actually increases significantly.
+This remains true until about 4 or 5 processors, where the runtime finally proceeds to drop below the initial runtime execution. Exact results may be seen in Table 1.
 
 \begin{table}[ht]
 \centering
@@ -260,12 +260,21 @@ Figure 1 illustrates that as the number of processors increase, the runtime decr
 \end{tabular}
 \end{table}
 
-This linear decrease is consistent with how OpenMP distributes its work. OpenMP distributes the task of an independent Bayesian network computation across multiple threads simultaneously. These independent tasks are non-blocking and do not lock one another, and thus have very little contention. There is one lock after each computation which appends the network to the consensus network, but is negligible to the total time taken to compute the Bayesian networks.
-OpenMP results in such low runtime standard error because it works with memory within the program and requires no network communication like MPI.
-The reduction of standard error as the number of threads increase may be due to the kernel. The kernel is responsible for scheduling threads and ensuring other work on the system gets done. The increase in threads means there are more threads which may go uninterrupted by the kernel scheduling something else from the operating system.
+The program runtime is not consistent with how OpenMP distributes its work.
+OpenMP distributes the task of an independent Bayesian network computation across multiple threads simultaneously. These independent tasks are non-blocking and do not lock one another, and thus should have very little contention.
+There is one lock after each computation which appends the network to the consensus network, but it has been negligible in previous experiments @firstpaper to the total time taken to compute the Bayesian networks.
+
+It's difficult to reason about this,
 
 # CUDA
-When performing matrix operations on CUDA, the performance increase is marginal.
+When performing matrix operations on CUDA, the performance increase is between negative and marginal.
+Device 0: Tesla K40c
+ -> multiprocessor count: 15
+ -> stream processor count: 192 (total 2880)
+ -> warp size: 32
+ -> max threads per block: 1024
+ -> max block dimensions: 1024 x 1024 x 64
+ -> max grid dimensions: 2147483647 x 65535 x 65535
 
 Figure 2 illustrates that when using CUDA, the runtime decreases marginally. Exact results may be seen in Table 2.
 
