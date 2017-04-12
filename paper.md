@@ -276,7 +276,7 @@ There is one lock after each computation which appends the network to the consen
 It's difficult to reason about this,
 
 # CUDA
-When performing matrix operations on CUDA, the performance increase is between negative and marginal.
+When performing matrix operations on CUDA, the performance increase is between negative (a decrease).
 The tests were performed on a Tesla K40c card, which contains 15 multiprocessors at 192 stream processors each (2880 total stream cores).
 
 Figure 2 illustrates that when using CUDA, the runtime increases. Exact results may be seen in Table 2.
