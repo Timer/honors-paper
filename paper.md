@@ -1,5 +1,5 @@
 ---
-title: "Implementation of Conditionally Accelerated Matrix Math"
+title: "Implementation of CUDA Accelerated Bayesian Network Learning"
 author:
   - |
     | Joseph S. Haddad
@@ -254,9 +254,18 @@ This remains true until about 4 or 5 processors, where the runtime finally proce
 \begin{tabular}{|l|l|l|l|}
 \hline
 \textbf{Cores} & \textbf{Mean Time} \\ \hline
-2 & 362.032s \\ \hline
-6 & 167.460s \\ \hline
-12 & 93.540s \\ \hline
+1 & 202.377s \\ \hline
+2 & 346.851s \\ \hline
+3 & 259.284s \\ \hline
+4 & 214.646s \\ \hline
+5 & 180.662s \\ \hline
+6 & 156.596s \\ \hline
+7 & 140.779s \\ \hline
+8 & 128.487s \\ \hline
+9 & 117.792s \\ \hline
+10 & 109.486s \\ \hline
+11 & 103.762s \\ \hline
+12 & 94.739s \\ \hline
 \end{tabular}
 \end{table}
 
@@ -268,15 +277,9 @@ It's difficult to reason about this,
 
 # CUDA
 When performing matrix operations on CUDA, the performance increase is between negative and marginal.
-Device 0: Tesla K40c
- -> multiprocessor count: 15
- -> stream processor count: 192 (total 2880)
- -> warp size: 32
- -> max threads per block: 1024
- -> max block dimensions: 1024 x 1024 x 64
- -> max grid dimensions: 2147483647 x 65535 x 65535
+The tests were performed on a Tesla K40c card, which contains 15 multiprocessors at 192 stream processors each (2880 total stream cores).
 
-Figure 2 illustrates that when using CUDA, the runtime decreases marginally. Exact results may be seen in Table 2.
+Figure 2 illustrates that when using CUDA, the runtime increases. Exact results may be seen in Table 2.
 
 \begin{table}[ht]
 \centering
@@ -285,9 +288,18 @@ Figure 2 illustrates that when using CUDA, the runtime decreases marginally. Exa
 \begin{tabular}{|l|l|l|l|}
 \hline
 \textbf{Cores (+ CUDA)} & \textbf{Mean Time} \\ \hline
-2 & 360.480s \\ \hline
-6 & 156.996s \\ \hline
-12 & 92.879s \\ \hline
+1 & 294.369s \\ \hline
+2 & 349.657s \\ \hline
+3 & 260.654s \\ \hline
+4 & 220.396s \\ \hline
+5 & 180.566s \\ \hline
+6 & 156.880s \\ \hline
+7 & 140.821s \\ \hline
+8 & 128.177s \\ \hline
+9 & 119.473s \\ \hline
+10 & 109.909s \\ \hline
+11 & 103.632s \\ \hline
+12 & 94.461s \\ \hline
 \end{tabular}
 \end{table}
 
