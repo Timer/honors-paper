@@ -153,7 +153,7 @@ By eliminating one problem and introducing another, consensus networks enable th
 Other authors describe parallel implementations that can increase the speed of Bayesian network learning @altekar @misra.
 However, no libraries existed which compute multiple Bayesian networks concurrently.
 
-This paper is an extension to the initial implementation of the program, which shows why the algorithm needs to be sped up.
+This paper is an extension to the initial implementation of the program, which shows why the algorithm needs to be sped up @firstpaper.
 An increase in samples causes linear growth of the problem and introduction of additional genes causes exponential growth of the problem @firstpaper.
 
 This project examines the value of Bayesian network learning within a GPGPU accelerated environment in order to reduce the time needed to generate consensus networks using many topological inputs.
