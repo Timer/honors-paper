@@ -239,12 +239,12 @@ At its core, the implementation depends on a hybrid switch between utilizing CUD
 
 # Results and Discussion
 
+![Illustrates the comparison between CPU and CUDA. It appears CUDA provides nearly no benefit for Bayesian network learning.](img/sharp.png)
+
 ## Processors
 When increasing the number of processors, the resulting runtime decrease appears to be linear. The linear nature of the results removes the necessity for further testing between the number of cores tested.
 
 Figure 1 illustrates that as the number of processors increase, the runtime decreases at approximately the same rate. Exact results may be seen in Table 1.
-
-![Illustrates runtime decrease as the number of processors increase. The decline is nearly linear.](img/processors.png)
 
 \begin{table}[ht]
 \centering
@@ -267,8 +267,6 @@ The reduction of standard error as the number of threads increase may be due to 
 When performing matrix operations on CUDA, the performance increase is marginal.
 
 Figure 2 illustrates that when using CUDA, the runtime decreases marginally. Exact results may be seen in Table 2.
-
-![Illustrates runtime decrease with CUDA.](img/gpu.png)
 
 \begin{table}[ht]
 \centering
