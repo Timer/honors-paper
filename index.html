@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Joseph S. Haddad The University of Akron 302 E Buchtel Ave Akron, OH, 44325, United States jsh77@zips.uakron.edu" />
+  <title>Implementation of CUDA Accelerated Bayesian Network Learning</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #0000ff; } /* Keyword */
+code > span.ch { color: #008080; } /* Char */
+code > span.st { color: #008080; } /* String */
+code > span.co { color: #008000; } /* Comment */
+code > span.ot { color: #ff4000; } /* Other */
+code > span.al { color: #ff0000; } /* Alert */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #008000; font-weight: bold; } /* Warning */
+code > span.cn { } /* Constant */
+code > span.sc { color: #008080; } /* SpecialChar */
+code > span.vs { color: #008080; } /* VerbatimString */
+code > span.ss { color: #008080; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { } /* Variable */
+code > span.cf { color: #0000ff; } /* ControlFlow */
+code > span.op { } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #ff4000; } /* Preprocessor */
+code > span.do { color: #008000; } /* Documentation */
+code > span.an { color: #008000; } /* Annotation */
+code > span.cv { color: #008000; } /* CommentVar */
+code > span.at { } /* Attribute */
+code > span.in { color: #008000; } /* Information */
+  </style>
+  <link rel="stylesheet" href="pandoc.css" type="text/css" />
+</head>
+<body>
+<div id="header">
+<h1 class="title">Implementation of CUDA Accelerated Bayesian Network Learning</h1>
+<h2 class="author"><p>Joseph S. Haddad<br />
+The University of Akron<br />
+302 E Buchtel Ave<br />
+Akron, OH, 44325, United States<br />
+jsh77@zips.uakron.edu</p></h2>
+</div>
+<div id="TOC">
+<ul>
+<li><a href="#introduction"><span class="toc-section-number">1</span> Introduction</a></li>
+<li><a href="#background"><span class="toc-section-number">2</span> Background</a><ul>
+<li><a href="#bayesian-networks"><span class="toc-section-number">2.1</span> Bayesian Networks</a></li>
+<li><a href="#openmp"><span class="toc-section-number">2.2</span> OpenMP</a></li>
+<li><a href="#cuda"><span class="toc-section-number">2.3</span> CUDA</a></li>
+</ul></li>
+<li><a href="#methodology"><span class="toc-section-number">3</span> Methodology</a><ul>
+<li><a href="#processors"><span class="toc-section-number">3.1</span> Processors</a></li>
+<li><a href="#cuda-1"><span class="toc-section-number">3.2</span> CUDA</a></li>
+</ul></li>
+<li><a href="#results-and-discussion"><span class="toc-section-number">4</span> Results and Discussion</a><ul>
+<li><a href="#processors-1"><span class="toc-section-number">4.1</span> Processors</a></li>
+</ul></li>
+<li><a href="#cuda-2"><span class="toc-section-number">5</span> CUDA</a></li>
+<li><a href="#conclusion"><span class="toc-section-number">6</span> Conclusion</a></li>
+<li><a href="#acknowledgments"><span class="toc-section-number">7</span> Acknowledgments</a></li>
+</ul>
+</div>
+<h1 id="introduction"><span class="header-section-number">1</span> Introduction</h1>
+<p>Inferring relations among genes requires a significant amount of data. Bayesian networks may be used to correlate this data and extract relationships among the genes <span class="citation">Sriram (2011)</span>. We do not know what this relationship is, but we do know it has a high likelihood of existing. These relationships can then be used to make testable hypotheses to determine how gene interactions influence life in organisms or humans. As a result, tests can be performed in the lab with more confidence and a reduced chance of wasting time and resources.</p>
+<p>This concept has been applied to smaller data sets and shows promising results <span class="citation">Sriram (2011)</span>, however remains too slow to be applied to a larger problem. It is our objective to decrease the runtime required to form a network which may reveal genetic interactions. Bayesian network learning, however, is inherently slow because it is an NP-hard algorithm <span class="citation">Cooper and Herskovits (1992)</span>. Search space reduction algorithms may be utilized to reduce the computational complexity. K2 is a great example of a search space reduction algorithm, and is our algorithm of choice. However, it introduces a new problem. K2 restricts the parent hierarchy of genes within the network <span class="citation">Cooper and Herskovits (1992)</span>, and thus introduces bias in the computed relations. To achieve high confidence in the generated networks, an abundance of Bayesian networks need to be computed using random search space restrictions. These random search space restrictions (or topologies) remove the bias and provide results which can be interpreted at various levels of confidence.</p>
+<p>By eliminating one problem and introducing another, consensus networks enable the ability of parallelization by requiring multiple units of work rather than just one faster unit of work. Other authors describe parallel implementations that can increase the speed of Bayesian network learning <span class="citation">Altekar et al. (2004)</span> <span class="citation">Misra et al. (2014)</span>. However, no libraries existed which compute multiple Bayesian networks concurrently.</p>
+<p>This paper is an extension to the initial implementation of the program, which shows why the algorithm needs to be sped up <span class="citation">Haddad et al. (2016)</span>. An increase in samples causes linear growth of the problem and introduction of additional genes causes exponential growth of the problem <span class="citation">Haddad et al. (2016)</span>.</p>
+<p>This project examines the value of Bayesian network learning within a GPGPU accelerated environment in order to reduce the time needed to generate consensus networks using many topological inputs.</p>
+<h1 id="background"><span class="header-section-number">2</span> Background</h1>
+<h2 id="bayesian-networks"><span class="header-section-number">2.1</span> Bayesian Networks</h2>
+<p>Bayesian networks capture qualitative relationships among variables within a directed acyclic graph (or DAG). Nodes within the DAG represent variables, and edges represent dependencies between the variables <span class="citation">Korb and Nicholson (2003)</span> <span class="citation">Pearl (1998)</span>. Bayesian networks have a search space which grows exponentially when introducing new nodes and not placing restrictions on the structure of the network. This complication can be overcome by using the K2 algorithm. The K2 algorithm reduces the computational cost of learning by imposing restraints on parent node connections via topological ordering <span class="citation">Cooper and Herskovits (1992)</span>. Here, a topology refers to a hierarchical structure of parenthood that the K2 algorithm will utilize to reduce overall computational complexity while scoring data relationships. Restricting the parent ordering, however, creates an issue of bias, which is inherent within a constraint-based search space reduction <span class="citation">Sriram (2011)</span>. Sriram <span class="citation">Sriram (2011)</span> proposed a solution to this issue by creating a consensus network, or the combination of multiple Bayesian networks derived from several topological inputs. To eliminate the bias created by these restraints, many randomly generated topologies are used. By increasing the number of topological inputs, the consensus network has a greater chance of reflecting the true nature of the gene interactions with higher levels of confidence.</p>
+<h2 id="openmp"><span class="header-section-number">2.2</span> OpenMP</h2>
+<p>OpenMP or (Open Multi-Processing) is a cross-platform, multilingual application programming interface (API) which enables shared-memory parallel programming on a single machine. The OpenMP specification consists of compiler directives and library functions used to parallelize portions of a program’s control flow <span class="citation">(“OpenMP Application Program Interface,” n.d.)</span>. The most rudimentary example of OpenMP would be to distribute a for-loop across multiple threads.</p>
+<p>An advisory board of top entities in computation controls its specification <span class="citation">(“About the OpenMP ARB and OpenMP.org,” n.d.)</span> which can be implemented by various compilers to target specific system capabilities and architectures. The specification includes language-specific APIs, compiler directives, and standardized environment variables <span class="citation">(“OpenMP Application Program Interface,” n.d.)</span>. The model of OpenMP is comparable to the fork-join model, but provides additional convenience (cross-platform) features through compiler directives. These directives consist of, but are not limited to, barriers, critical regions, variable atomicity, shared memory, and reductions <span class="citation">(“OpenMP Application Program Interface,” n.d.)</span>.</p>
+<p>OpenMP enables parallel code portability at a level which would not be achievable while retaining an ideal code climate. OpenMP, by nature allows simple and straight-forward parallelization of loops with a compiler directive that targets the system for which the program is compiled on. Without OpenMP, the program would have to include many different libraries and routines to achieve parallel code across different systems. The result of this would be a program which only works on a specific set of machines, or a code base which is hard to maintain and debug when changes are made to the underlying algorithm.</p>
+<h2 id="cuda"><span class="header-section-number">2.3</span> CUDA</h2>
+<p>CUDA is a parallel computing platform and application programming interface (API) developed by NVIDIA <span class="citation">(“CUDA Parallel Computing Platform,” n.d.)</span>. CUDA allows software developers to utilize CUDA-enabled GPUs for general purpose processing (or GPGPU). CUDA introduces a concept called kernels, which are extensions of C functions that, when called, are executed in parallel by CUDA threads instead of once like regular C functions <span class="citation">(“CUDA C Programming Guide,” n.d.)</span>. The primary use case is when work is independent and many things need to be done in parallel (e.g. scaling a vector). Due to the structure of threads on the GPU, operations such as branches or jumps are permitted but highly discouraged. This is because threads run in lockstep and when a branch happens, the branches are executed serially. This means threads are suspended and do not continue execution while the opposite branch is being explored. After the branch completes and the instructions converge, all threads resume running <span class="citation">(“CUDA C Programming Guide,” n.d.)</span>. This has many detrimental performance implications. Knowing this, the GPU is best suited for vector-operations like scaling or other arithmetic which does not branch. The memory for CUDA also resides on the GPU itself, which means before any kernels are executed memory must be copied to the GPU. Memory must then also be copied back to the host machine for use by the CPU <span class="citation">(“CUDA C Programming Guide,” n.d.)</span>. This adds a delay which may invalidate the benefits of CUDA for smaller workloads. We will evaluate this in this study.</p>
+<h1 id="methodology"><span class="header-section-number">3</span> Methodology</h1>
+<p>Testing was performed on the <code>tesla</code> machine at the University of Akron’s Computer Science Department. The machine contains a Tesla K40C and 2x Intel(R) Xeon(R) CPU X5690 @ 3.47GHz. All tests utilize purely synthetic data in the form of a gene-by-sample matrix consisting of the presence or absence of each gene within the sample. This data was generated according to a model we defined. We then ensured the result of the consensus network(s) matched our model to validate functionality and evaluate a degree of correctness for our algorithm. Each test was run five times with the mean, standard deviation, and standard error calculated to measure runtime consistency.</p>
+<p>The library being used to run the tests is available online <span class="citation">(“Bayesian Learning Source Code,” n.d.)</span>. This library was implemented as described in this paper.</p>
+<h2 id="processors"><span class="header-section-number">3.1</span> Processors</h2>
+<p>The first natural step in parallelizing computation is to attempt to use multiple cores (or threads) simultaneously on the machine. This can be done by running multiple instances of the program, or by implementing code which takes advantage of multiple threads. There is a lot of shared memory in the program, however, which adds additional complexity and latency when running multiple instances of the program. To keep things simple and quick, a single program instance will be utilized. Analyzing the program reveals a couple potential places for parallelization. There are many for-loops which perform actions which are independent from one another. The for-loops identified for inspection are the generation of topologies and the iteration over the topologies to generate networks.</p>
+<p>The generation of topologies results in a a predetermined number of topologies filled into an array. This operation can be easily parallelized across multiple cores as they are independent. The appropriate tool to perform this parallelization is OpenMP. OpenMP was implemented with a simple compiler directive which sped up computation.</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#pragma omp parallel for</span>
+<span class="kw">for</span> (...) { }</code></pre></div>
+<p>Iterating over the topologies to generate networks can also be parallelized. The creation of Bayesian networks are independent from one another, and thus, networks can be asynchronously generated. Implementation of this parallelization is straight-forward as Bayesian network computation does not mutate its data set. This prevents us from having to replicate the memory and increase the space complexity of the algorithm. OpenMP was implemented again as shown above. Additionally, within the parallel for, the resulting network must be appended to the consensus network. The consensus network, however, is not thread-safe and must be operated on within a critical section. A critical section specifies that the code can only be executed on one thread at a time.</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#pragma omp critical</span>
+<span class="kw">for</span> (...) { }</code></pre></div>
+<p>This ensures the networks are properly summed together, otherwise, an addition may be lost. For example, if <code>Thread A</code> and <code>Thread B</code> attempt to increment a variable at the same time, they may both access the value before the other commits the new value. This will result in a lost operation, as the threads are not aware of one another.</p>
+<p>To measure the resulting computational runtime decrease, multiple tests were performed with varying number of processors. A single set of synthetic data was used which consisted of 10 genes and 102,400 samples. Using <code>tesla</code> (2x Intel(R) Xeon(R) CPU X5690 @ 3.47GHz), tests were run by varying the number of processors (up to 12) and measuring the algorithm performance for the creation of 16 Bayesian networks per gene (160 total). We have reached the resource limits on the system(s) which we have access to, and cannot test beyond 12 cores. The selection of 10 genes and 16 Bayesian networks was arbitrarily chosen as sufficient means to measure computation time.</p>
+<h2 id="cuda-1"><span class="header-section-number">3.2</span> CUDA</h2>
+<p>Since network generation relies heavily on matrix math, which consists of many vector operations, it makes sense to explore acceleration using CUDA. Parallelizing code in CUDA requires memory stored in contiguous memory on the host machine.</p>
+<p>With these two prerequisites, adding CUDA is relatively trivial but requires an understanding of some low level units and architecture. Executing CUDA code consists of grids, blocks, and threads. These units are important to understand so you can achieve maximum occupancy (utilization) of the cores on the GPU.</p>
+<p>Simply put, these units are simply ways to split up work which is to be processed by the GPU. In terms of the hierarchy, threads make up a block and blocks make up a grid. A grid is executed on the GPU which is composed of many multiprocessors. Each multiprocessor is responsible for executing one or more of the blocks in the grid. The multiprocessors consist of many stream processors, which then are responsible for running one or more of the threads in the block.</p>
+<p>It is also important to be aware of the architecture of your GPU device. There is a maximum number of threads that can be executed per block. It is important to know this, because over scheduling threads will not cause an error, but instead corrupt memory.</p>
+<p>Determining maximum occupancy without exceeding the capability of the GPU is very simple since CUDA 6.5 (used to be difficult), which introduced <code>cudaOccupancyMaxPotentialBlockSize()</code>. This function reasonably determines the optimal execution configuration for a user defined kernel. Invoking this method returns the minGridSize and blockSize optimal to execute a kernel with the given shared memory usage (dynamicSMemSize) and total number of kernels you intend to do work on (blockSizeLimit, e.g. array length).</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="kw">template</span> &lt;<span class="kw">class</span> T&gt;
+cudaError_t cudaOccupancyMaxPotentialBlockSize(<span class="dt">int</span> *minGridSize, <span class="dt">int</span> *blockSize, T kernel, size_t dynamicSMemSize, <span class="dt">int</span> blockSizeLimit);</code></pre></div>
+<p>Within the kernel, you must determine the unit of work the thread is responsible for. To compute this, you must use some CUDA defined runtime variables to decode that thread’s index.</p>
+<pre><code>blockDim (type: dim3) Dimensions of the block executing in this context
+blockIdx (type: uint3) Current block index within executing grid
+threadIdx (type: uint3) Current thread index within executing block</code></pre>
+<p>With this knowledge and the heiarchy as explained previously, we can deduce the following expression to determine our thread index: <code>blockIdx.x * blockDim.x + threadIdx.x</code>.</p>
+<p>Applying this, we can easily implement an expensive mathematical function in CUDA:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">__global__ <span class="dt">void</span> vec_lgamma(<span class="dt">double</span> *a, <span class="dt">double</span> *c, <span class="dt">const</span> <span class="dt">unsigned</span> <span class="dt">int</span> n) {
+  <span class="dt">const</span> <span class="dt">long</span> idx = blockIdx.x * blockDim.x + threadIdx.x;
+  <span class="kw">if</span> (idx &lt; n) {
+    c[idx] = lgamma(a[idx]);
+  }
+}</code></pre></div>
+<p>Secondly, we can also easily implement matrix addition and subtraction (with small modification):</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">__global__ <span class="dt">void</span> vec_add(<span class="dt">double</span> *a, <span class="dt">double</span> *b, <span class="dt">double</span> *c, <span class="dt">const</span> <span class="dt">unsigned</span> <span class="dt">int</span> n) {
+  <span class="dt">const</span> <span class="dt">long</span> idx = blockIdx.x * blockDim.x + threadIdx.x;
+  <span class="kw">if</span> (idx &lt; n) {
+    c[idx] = a[idx] + b[idx];
+  }
+}</code></pre></div>
+<p>It is then used like so:</p>
+<div class="sourceCode"><pre class="sourceCode cpp"><code class="sourceCode cpp">__host__ <span class="dt">double</span> *cu_add(<span class="dt">const</span> <span class="dt">int</span> rows, <span class="dt">const</span> <span class="dt">int</span> cols, <span class="dt">double</span> *m1, <span class="dt">double</span> *m2) {
+  <span class="kw">auto</span> N = rows * cols;
+  <span class="dt">double</span> *C_accelerate_data = <span class="kw">nullptr</span>;
+  cudaMalloc((<span class="dt">void</span> **) &amp;C_accelerate_data, rows * cols * <span class="kw">sizeof</span>(<span class="dt">double</span>));
+  <span class="dt">int</span> blocks, threads;
+  getLaunchConfiguration(vec_add, N, &amp;blocks, &amp;threads);
+  vec_add&lt;&lt;&lt;blocks, threads&gt;&gt;&gt;(m1, m2, C_accelerate_data, N);
+  cudaDeviceSynchronize();
+  <span class="kw">return</span> C_accelerate_data;
+}</code></pre></div>
+<h1 id="results-and-discussion"><span class="header-section-number">4</span> Results and Discussion</h1>
+<div class="figure">
+<img src="img/sharp.png" alt="Illustrates the comparison between CPU and CUDA. It appears CUDA provides nearly no benefit for Bayesian network learning." />
+<p class="caption">Illustrates the comparison between CPU and CUDA. It appears CUDA provides nearly no benefit for Bayesian network learning.</p>
+</div>
+<h2 id="processors-1"><span class="header-section-number">4.1</span> Processors</h2>
+<p>When increasing the number of processors, a very strange anomaly occurs. When first increasing the amount of work to two processors, runtime actually increases significantly. This remains true until about 4 or 5 processors, where the runtime finally proceeds to drop below the initial runtime execution. Exact results may be seen in Table 1.</p>
+
+<p>The program runtime is not consistent with how OpenMP distributes its work. OpenMP distributes the task of an independent Bayesian network computation across multiple threads simultaneously. These independent tasks are non-blocking and do not lock one another, and thus should have very little contention. There is one lock after each computation which appends the network to the consensus network, but it has been negligible in previous experiments <span class="citation">Haddad et al. (2016)</span> to the total time taken to compute the Bayesian networks.</p>
+<p>It’s difficult to reason about this,</p>
+<h1 id="cuda-2"><span class="header-section-number">5</span> CUDA</h1>
+<p>When performing matrix operations on CUDA, the performance increase is negative. In a couple cases, the CUDA implementation beats out the CPU by fractions of a second. The tests were performed on a Tesla K40c card, which contains 15 multiprocessors at 192 stream processors each (2880 total stream cores), versus the system’s 12 cores.</p>
+<p>Figure 1 illustrates that when using CUDA, the runtime increase is negative. Exact results may be seen in Table 2.</p>
+
+<p>The detrimental performance (and seldom marginal increase) is unfortunate, but understandable. Essentially, the time it takes to copy memory to and from the GPU outweighs that of the performance gain of <code>O(n)</code> operations, as computing networks does not perform any matrix multiplication (approx <code>O(n^3)</code>) and strictly <code>O(n)</code> operations (e.g. addition, subtraction, scalars).</p>
+<h1 id="conclusion"><span class="header-section-number">6</span> Conclusion</h1>
+<p>By generating a consensus network out of many Bayesian networks, researchers may screen and infer new gene interactions. This allows researchers to feel more confident about testing hypotheses in the lab, such that their resources and time will not be wasted.</p>
+<p>We have concluded that utilizing parallelization through means of CUDA trivially reduces the time to generate a consensus network. Future work may involve parallelizing the coalescing of consensus networks in effort to reduce the overhead introduced when increasing cluster parallelism.</p>
+<h1 id="acknowledgments"><span class="header-section-number">7</span> Acknowledgments</h1>
+<p>This research was funded in part by a grant from the Choose Ohio First Bioinformatics scholarship. Additional resources were provided by the The University of Akron’s Buchtel College of Arts and Sciences.</p>
+<p>The data, statements, and views within this paper are solely the responsibility of the authors.</p>
+
+<div id="refs" class="references">
+<div id="ref-openmpboard">
+<p>“About the OpenMP ARB and OpenMP.org.” n.d. <a href="http://openmp.org/wp/about-openmp/" class="uri">http://openmp.org/wp/about-openmp/</a>.</p>
+</div>
+<div id="ref-altekar">
+<p>Altekar, Gautam, Sandhya Dwarkadas, John P. Huelsenbeck, and Fredrik Ronquist. 2004. “Parallel Metropolis Coupled Markov Chain Monte Carlo for Bayesian Phylogenetic Inference.” Bioinformatics.</p>
+</div>
+<div id="ref-sourcecode">
+<p>“Bayesian Learning Source Code.” n.d. <a href="https://github.com/Timer/bayesian-learning" class="uri">https://github.com/Timer/bayesian-learning</a>.</p>
+</div>
+<div id="ref-cooper">
+<p>Cooper, Gregory F., and Edward Herskovits. 1992. “A Bayesian Method for the Induction of Probabilistic Networks from Data.” Machine Learning.</p>
+</div>
+<div id="ref-cudaguide">
+<p>“CUDA C Programming Guide.” n.d. <a href="http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html" class="uri">http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html</a>.</p>
+</div>
+<div id="ref-cudainfo">
+<p>“CUDA Parallel Computing Platform.” n.d. <a href="http://www.nvidia.com/object/cuda_home_new.html" class="uri">http://www.nvidia.com/object/cuda_home_new.html</a>.</p>
+</div>
+<div id="ref-firstpaper">
+<p>Haddad, Joseph S., Anthony Deeter, Zhong-Hui Duan, and Timothy W. O’Neil. 2016. “Analysis of Parallel Bayesian Network Learning.” Proceedings of the 31st International Conference on Computers and Their Applications.</p>
+</div>
+<div id="ref-korb">
+<p>Korb, Kevin, and Ann Nicholson. 2003. <em>Bayesian Artificial Intelligence</em>. Chapman and Hall/CRC.</p>
+</div>
+<div id="ref-misra">
+<p>Misra, Sanchit, Vasimuddin Md, Kiran Pamnany, Sriram P. Chockalingam, Yong Dong, Min Xie, Maneesha R. Aluru, and Srinivas Aluru. 2014. “Parallel Bayesian Network Structure Learning for Genome-Scale Gene Networks.” International Conference for High Performance Computing, Networking, Storage and Analysis.</p>
+</div>
+<div id="ref-openmpapi">
+<p>“OpenMP Application Program Interface.” n.d. <a href="http://www.openmp.org/mp-documents/OpenMP4.0.0.pdf" class="uri">http://www.openmp.org/mp-documents/OpenMP4.0.0.pdf</a>.</p>
+</div>
+<div id="ref-pearl">
+<p>Pearl, Judea. 1998. <em>Probabilistic Inference in Intelligent Systems</em>. Morgan Kaufmann Publishers.</p>
+</div>
+<div id="ref-sriram">
+<p>Sriram, Aparna. 2011. “Predicting Gene Relations Using Bayesian Networks.” MS thesis, University of Akron. <a href="https://etd.ohiolink.edu/pg_10?0::NO:10:P10_ETD_SUBID:47568" class="uri">https://etd.ohiolink.edu/pg_10?0::NO:10:P10_ETD_SUBID:47568</a>.</p>
+</div>
+</div>
+</body>
+</html>
