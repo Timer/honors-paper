@@ -284,6 +284,20 @@ __global__ void vec_add(double *a, double *b, double *c, const unsigned int n) {
 }
 ```
 
+It is then used like so:
+```c++
+__host__ double *cu_add(const int rows, const int cols, double *m1, double *m2) {
+  auto N = rows * cols;
+  double *C_accelerate_data = nullptr;
+  cudaMalloc((void **) &C_accelerate_data, rows * cols * sizeof(double));
+  int blocks, threads;
+  getLaunchConfiguration(vec_add, N, &blocks, &threads);
+  vec_add<<<blocks, threads>>>(m1, m2, C_accelerate_data, N);
+  cudaDeviceSynchronize();
+  return C_accelerate_data;
+}
+```
+
 # Results and Discussion
 
 ![Illustrates the comparison between CPU and CUDA. It appears CUDA provides nearly no benefit for Bayesian network learning.](img/sharp.png)
